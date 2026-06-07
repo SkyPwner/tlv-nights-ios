@@ -1,0 +1,39 @@
+workflows:
+  ios-simulator:
+    name: TLV Nights - iOS Simulator
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+
+    environment:
+      xcode: latest
+      vars:
+        XCODE_PROJECT: "TLVNights.xcodeproj"
+        XCODE_SCHEME: "TLVNights"
+
+    scripts:
+      - name: Build .app for iOS Simulator
+        script: |
+          set -e
+          xcodebuild build \
+            -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -configuration Debug \
+            -derivedDataPath "$CM_BUILD_DIR/build/DerivedData" \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Package .app as zip
+        script: |
+          set -e
+          mkdir -p "$CM_BUILD_DIR/build/artifacts"
+          APP_PATH=$(find "$CM_BUILD_DIR/build/DerivedData/Build/Products/Debug-iphonesimulator" -name "*.app" -type d | head -n 1)
+          echo "Found app: $APP_PATH"
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$CM_BUILD_DIR/build/artifacts/TLVNights-simulator.app.zip"
+
+    artifacts:
+      - build/DerivedData/Build/Products/Debug-iphonesimulator/*.app
+      - build/artifacts/TLVNights-simulator.app.zip
+      - /tmp/xcodebuild_logs/*.log
