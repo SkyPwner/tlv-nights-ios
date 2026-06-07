@@ -11,6 +11,11 @@ workflows:
         XCODE_SCHEME: "TLVNights"
 
     scripts:
+      - name: Apply CI source fixes
+        script: |
+          set -e
+          perl -pi -e 's/ body: "/ bodyText: "/g; s/let body: String/let bodyText: String/g; s/Text\(body\)/Text(bodyText)/g' TLVNights/Screens/Auth/AuthFlowView.swift
+
       - name: Build .app for iOS Simulator
         script: |
           set -e
